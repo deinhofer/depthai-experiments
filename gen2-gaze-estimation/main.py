@@ -10,6 +10,8 @@ import numpy as np
 from imutils.video import FPS
 from math import cos, sin
 
+from mouse_controller import MouseController
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-nd', '--no-debug', action="store_true", help="Prevent debug output")
@@ -297,6 +299,7 @@ class Main:
                 return read_correctly, new_frame
 
     def run(self):
+        mc = MouseController(precision='low', speed='fast')
         self.threads = [
             threading.Thread(target=self.face_thread),
             threading.Thread(target=self.land_pose_thread),
@@ -342,6 +345,8 @@ class Main:
                     else:
                         cv2.arrowedLine(self.debug_frame, (le_x, le_y), (le_x + x, le_y - y), (255, 0, 255), 3)
                         cv2.arrowedLine(self.debug_frame, (re_x, re_y), (re_x + x, re_y - y), (255, 0, 255), 3)
+
+                    mc.move(-self.gaze[0] / 10, self.gaze[1] / 10)
                 
                 if not args.lazer:
                     for raw_bbox in self.bboxes:
