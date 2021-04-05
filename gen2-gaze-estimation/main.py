@@ -272,9 +272,14 @@ class Main:
 
     def gaze_thread(self):
         gaze_nn = self.device.getOutputQueue("gaze_nn")
+        mc = MouseController(precision='high', speed='fast')
         while self.running:
             try:
                 self.gaze = np.array(gaze_nn.get().getFirstLayerFp16())
+
+                # move mouse cursor relative to current position
+                # print("moving mouse by ", self.gaze[0])
+                mc.move(-self.gaze[0], self.gaze[1])
             except RuntimeError as ex:
                 continue
 
@@ -299,7 +304,6 @@ class Main:
                 return read_correctly, new_frame
 
     def run(self):
-        mc = MouseController(precision='low', speed='fast')
         self.threads = [
             threading.Thread(target=self.face_thread),
             threading.Thread(target=self.land_pose_thread),
@@ -345,8 +349,6 @@ class Main:
                     else:
                         cv2.arrowedLine(self.debug_frame, (le_x, le_y), (le_x + x, le_y - y), (255, 0, 255), 3)
                         cv2.arrowedLine(self.debug_frame, (re_x, re_y), (re_x + x, re_y - y), (255, 0, 255), 3)
-
-                    mc.move(-self.gaze[0] / 10, self.gaze[1] / 10)
                 
                 if not args.lazer:
                     for raw_bbox in self.bboxes:
